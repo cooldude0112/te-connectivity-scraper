@@ -1,0 +1,10 @@
+start "PART 1" scrapy crawl pdp_spider -a start=1 -a end=7000
+start "PART 2" scrapy crawl pdp_spider -a start=7001 -a end=14000
+start "PART 3" scrapy crawl pdp_spider -a start=14001 -a end=21000
+start "PART 4" scrapy crawl pdp_spider -a start=21001 -a end=28000
+start "PART 5" scrapy crawl pdp_spider -a start=28001 -a end=35000
+start "PART 6" scrapy crawl pdp_spider -a start=35001 -a end=42000
+start "PART 7" scrapy crawl pdp_spider -a start=42001 -a end=49000
+start "PART 8" scrapy crawl pdp_spider -a start=49001 -a end=56000
+start "PART 9" scrapy crawl pdp_spider -a start=56001 -a end=63000
+start "PART 10" scrapy crawl pdp_spider -a start=63001 -a end=70000

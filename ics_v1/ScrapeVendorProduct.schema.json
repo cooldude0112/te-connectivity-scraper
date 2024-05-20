@@ -1,0 +1,891 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "vendor_name": {
+      "examples": [
+        "Master Electronics",
+        "Great Gages"
+      ],
+      "description": "Full vendor name, with proper capitalization and spacing",
+      "type": "string",
+      "minLength": 1
+    },
+    "sku": {
+      "examples": [
+        "ABC123",
+        "00038481",
+        "PL/1-1234",
+        null
+      ],
+      "description": "Vendor's SKU for the product. Capitalization, spacing and special symbols exactly as vendor represents it on their website or systems. This is usually not equivalent to the manufacturer's product number, which is captured in the \"mpn\" field. For products without a SKU, set this property to null.",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?=.*\\S).+$"
+        }
+      ]
+    },
+    "pdp_url": {
+      "examples": [
+        "https://www.example-vendor.com/sensor-light-curtain-through-beam-pnp-1"
+      ],
+      "description": "Link to the vendor's PDP (product description page) for this product. Should be the canonical form of the URL, without any tracking or optional querystrings.",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "format": "url"
+        }
+      ]
+    },
+    "name": {
+      "examples": [
+        "3/8\"-16 x 6\" SAE J429 Grade 5 Zinc Finish Steel Tap Bolt",
+        "2\" Socket Weld 3000 lb Forged Steel Socket Weld Coupling",
+        "Silver Mirror DeWalt® Dominator Safety Glasses"
+      ],
+      "description": "Brief product name, as it would appear on a PLP (product listing page)",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "category": {
+      "examples": [
+        [
+          "Fasteners",
+          "Screws & Bolts",
+          "Socket Head Screws",
+          "Stainless Steel Socket Head Screws"
+        ],
+        [
+          "All Products",
+          "Fasteners",
+          "Screws"
+        ],
+        [
+          "Electronics"
+        ]
+      ],
+      "description": "Array representing the full path in the vendor's category hierarchy to the category for this product",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "price": {
+      "examples": [
+        [
+          {
+            "min_qty": 1,
+            "price": 1.23
+          }
+        ],
+        [
+          {
+            "min_qty": 5,
+            "price": 1.23
+          }
+        ],
+        [
+          {
+            "min_qty": 1,
+            "price": 1.23
+          },
+          {
+            "min_qty": 10,
+            "price": 1.13
+          },
+          {
+            "min_qty": 50,
+            "price": 1.03
+          }
+        ]
+      ],
+      "description": "Array of prices, representing unit price with optional volume based pricing. In the first example, the vendor doesn't use volume pricing. In the second example, there's no volume pricing, but a minimum order quantity of 5. In the third example, the vendor uses volume based pricing, meaning if you order between 1 and 9 units your price will be $1.23/unit, if you order more than 50 units your price will be $1.03/unit.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "required": [
+              "price",
+              "min_qty"
+            ]
+          },
+          {
+            "required": [
+              "price_string",
+              "min_qty"
+            ]
+          }
+        ],
+        "properties": {
+          "min_qty": {
+            "examples": [
+              1
+            ],
+            "description": "If the vendor uses volume discounts, the minimum quantity needed for this unit price. If unspecified by the vendor, should be set to 1",
+            "type": "number",
+            "minimum": 1
+          },
+          "price": {
+            "examples": [
+              2.34
+            ],
+            "description": "Gross pack price for a pack with the number or quantity of item(s) specified by the \"uom\"",
+            "type": "number"
+          },
+          "price_string": {
+            "examples": [
+              "Call for price"
+            ],
+            "description": "If the vendor does not provide a price, or price format is ambiguous or requires more explanation",
+            "type": "string",
+            "minLength": 1
+          },
+          "currency": {
+            "examples": [
+              "GBP"
+            ],
+            "description": "ISO 4217:2015 three letter currency code. Can be omitted for USD",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "uom": {
+      "examples": [
+        "each",
+        "pkg. of 12",
+        "linear ft"
+      ],
+      "description": "[DEPRECATED] How is the product sold? E.g. \"each\" (most products should have \"each\" as the UOM) or \"pkg. of 12\" or \"ft\" for something like rope. If you add quantity 1 to your cart, in each respective example you would get 1 item, or a pack of 12 items, or 1ft of rope",
+      "deprecated": true,
+      "type": "string",
+      "minLength": 1
+    },
+    "sku_unit": {
+      "examples": [
+        "item",
+        "linear ft",
+        "kg"
+      ],
+      "description": "How is the product sold? E.g. \"item\" (most products should have \"item\" as the sku_unit) or \"ft\" for something like rope. If you add quantity 1 to your cart, in each respective example you would get 1 * sku_quantity item(s), or 1ft of rope",
+      "type": "string",
+      "minLength": 1
+    },
+    "sku_quantity": {
+      "examples": [
+        1,
+        5
+      ],
+      "description": "If the sku_unit is \"item\", sku_quantity represents the pack size. Generally if sku_unit is anything other than \"item\" sku_quantity should be 1",
+      "type": "number",
+      "minimum": 0
+    },
+    "quantity_increment": {
+      "examples": [
+        1,
+        3000
+      ],
+      "description": "Number representing the steps in which the product quantity can be changed. Setting this to values > 1 results in a behavior similar to packs, but the quantity shown in the cart is equal to the number of items, not the number of packs. If needed in the future, we may also allow fractional quantity increments between 0 and 1. This would allow e.g. products sold by length with unit “inch” to be ordered in fractions of an inch.",
+      "type": "number",
+      "minimum": 0
+    },
+    "pack_label": {
+      "examples": [
+        "tray",
+        "reel",
+        "pack"
+      ],
+      "description": "How is the \"pack\" called for the product? This is only needed when sku_quantity is greater than 1. Use singular term.",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "available_to_checkout": {
+      "examples": [
+        true,
+        false
+      ],
+      "description": "Is the item both in stock and available to purchase via the website?",
+      "type": "boolean"
+    },
+    "in_stock": {
+      "examples": [
+        true,
+        false
+      ],
+      "description": "Is the item in stock?",
+      "type": "boolean"
+    },
+    "estimated_lead_time": {
+      "examples": [
+        "1 day",
+        "3 days",
+        "2-4 weeks"
+      ],
+      "description": "If available, how quickly can products be shipped",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "description": {
+      "examples": [
+        "Tap bolts are similar to hex bolts except they are fully threaded no matter what their length. They are designed to be used in drilled and tapped holes. They are used in applications where a stud with a nut on each end would be impractical. Used in low strength applications. Zinc plating, retards the corrosion rate in a normal atmosphere. Grade 5 is the most common grade used in manufacturing assembly.",
+        "Supplied as a Cup & Cone Set. Separate components may also be available European Made General Industrial Machinery, Automotive, Construction Equipment, Trailers"
+      ],
+      "description": "Plain text description of the product, or the product category. Ideally this is not the place for product specifications or attributes",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "description_html": {
+      "examples": [
+        "<div class=\"value\"><p><strong>The FRENIC-Mini (C2) is a general purpose micro drive that is easy to use and packed with features in a compact housing.</strong></p>\n<p>Standard functions of the FRENIC-Mini include high starting torque, synchronous motor control, optimum energy savings, PID control and built-in Modbus RTU.</p>\n<p>The optional NEMA/UL Type 1 kit allows you to use this drive in stand alone applications. There is also a DIN rail adapter (up to 5hp) and a remote/USB keypad accessory.</p>\n<p>The FRENIC-Mini is available in:</p>\n<ul>\n<li>1 phase, 115V from 1/8 to 1hp</li>\n<li>1 phase, 230V from 1/8 to 3hp</li>\n<li>3 phase, 230V from 1/8 to 20hp</li>\n<li>3 phase, 460V from 1/8 to 20hp</li>\n</ul>\n<p>The&nbsp;<a title=\"Frenic Mini\" href=\"https://www.example-vendor.com/products/ac-drives?manufacturer=45&amp;series=226\" target=\"_blank\">Fuji FRENIC-Mini</a>&nbsp;has a simplified torque vector control system with automatic torque boost function.&nbsp;</p>\n<ul>\n<li>Fan, Pump applications: automatic energy-saving function, PID control function, and cooling fan ON/OFF control function</li>\n<li>Target industries include transverse conveyors, conveyors for food processing, mixers, chemical equipment and wood processing machines</li>\n</div>"
+      ],
+      "description": "HTML description of the product, or the product category. Ideally this is not the place for product specifications or attributes",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "manufacturer": {
+      "examples": [
+        "Dewalt",
+        "NSK",
+        "Southwire"
+      ],
+      "description": "Name of the OEM, if available",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "mpn": {
+      "examples": [
+        "SSC-TR810"
+      ],
+      "description": "Manufacturer part number",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?=.*\\S).+$"
+        }
+      ]
+    },
+    "attributes": {
+      "examples": [
+        [
+          {
+            "name": "Length",
+            "value": "2in",
+            "group": null
+          },
+          {
+            "name": "Diameter",
+            "value": "3/8in",
+            "group": null
+          },
+          {
+            "name": "RoHS",
+            "value": "true",
+            "group": "Certifications"
+          }
+        ]
+      ],
+      "description": "Product attributes or specifications",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "examples": [
+              "Length",
+              "Diameter",
+              "Compatible Materials"
+            ],
+            "description": "Attribute name directly from vendor, with no normalization",
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "examples": [
+              "2 in",
+              "1/4\"",
+              "Steel, Aluminum, Plastic"
+            ],
+            "description": "Attribute value directly from vendor, with no normalization",
+            "type": "string",
+            "minLength": 1
+          },
+          "group": {
+            "examples": [
+              null,
+              "Compliance"
+            ],
+            "description": "If the vendor site groups attributes under sections or headers, what header was this under?",
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      }
+    },
+    "features": {
+      "description": "If the vendor has a list of features that don't fit with attributes, i.e. are not key/value pairs, they can be added here.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "examples": [
+              "PID Control Function",
+              "Standard RS-485 communications port",
+              "Compatible with all accessories"
+            ],
+            "description": "Feature plain text, as displayed",
+            "type": "string",
+            "minLength": 1
+          },
+          "group": {
+            "examples": [
+              "Series Features",
+              null,
+              "Functions for User Applications"
+            ],
+            "description": "If the vendor site groups features under sections or headers, what header was this under?",
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    },
+    "main_image": {
+      "examples": [
+        {
+          "source": "https://cdn.imgeng.in/media/catalog/product/cache/e53929650d581985fa53cd0b86942f5e/f/r/frenic-frenicmini-c2_fig1_7.jpg",
+          "type": "image/product",
+          "sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+          "media_type": "image/jpeg"
+        }
+      ],
+      "description": "Primary or most prominent image displayed in page for the product.",
+      "anyOf": [
+        {
+          "type": "object",
+          "anyOf": [
+            {
+              "type": "object",
+              "description": "Downloaded asset.",
+              "properties": {
+                "name": {
+                  "examples": [
+                    "Takex SSC-T800 Series Sequential Array Scanning Light Curtain"
+                  ],
+                  "description": "How was the asset labeled by the vendor? In the case of downloadable documents this is usually the link text. For images or other assets without a text label, you can use the alt text if available, or leave this blank",
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "source": {
+                  "examples": [
+                    "https://www.wolfautomation.com/media/pdf/lightcurtain/takex/takex-ssc-t800-lightcurtain.jpg"
+                  ],
+                  "description": "Fully qualified URL used to download the asset, or the string \"data-url\" to indicate an asset was provided in the form of a \"data:...\" URL.",
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "format": "url"
+                    },
+                    {
+                      "enum": [
+                        "data-url"
+                      ]
+                    }
+                  ]
+                },
+                "filename": {
+                  "examples": [
+                    "download.pdf"
+                  ],
+                  "description": "If the server response sets a download filename different than the url, e.g. via the header `Content-Disposition: attachment; filename=\"downloaded.pdf\"`, set this field to that name, otherwise do not set this field. Generally, this filed will be unset for images.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "type": {
+                  "examples": [
+                    "image/product"
+                  ],
+                  "description": "How is the asset presented in the page? As a rendered image, as a cad download (common filetypes for cad/3D are .step, .iges, .SLDPRT, .ipt, .x_t) (common filetypes for cad/2D are .dxf, .dwg, .SLDDRW), as a pdf or word document, or as another downloadable file type.  When choosing between a more generic type (e.g. \"image\") and a more specific type (e.g. \"image/product\"), use the more specific type if and only if the vendor clearly makes the distinction between the more specific types, or if the file type is unambiguous (e.g. .step files are always \"cad/3D\"). If you're not sure, use the more generic type.",
+                  "enum": [
+                    "image",
+                    "image/product",
+                    "image/package",
+                    "cad",
+                    "cad/2D",
+                    "cad/3D",
+                    "document",
+                    "document/spec",
+                    "document/cert",
+                    "document/manual",
+                    "document/catalog",
+                    "other"
+                  ]
+                },
+                "sha256": {
+                  "examples": [
+                    "ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73"
+                  ],
+                  "description": "Hash of asset contents as 64 character hexadecimal string. Use the SHA-256 flavor of the SHA-2 algorithm. This field may be omitted only if the file is behind a login wall.",
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "media_type": {
+                  "examples": [
+                    "image/jpeg",
+                    "application/pdf",
+                    "application/sldprt"
+                  ],
+                  "description": "The media type (formerly MIME type) describes the file format and is similar to the file extension. The media type can be extracted from the \"content-type\" response header when downloading the file. This header is typically more reliable than the file extension. If you're not sure, use the generic content type \"application/octet-stream\" for binary formats. This field may be omitted only if the file is behind a login wall.",
+                  "type": "string",
+                  "pattern": "^[a-z]+\\/[a-z0-9.+:_-]+$"
+                }
+              },
+              "required": [
+                "source",
+                "type",
+                "sha256",
+                "media_type"
+              ]
+            },
+            {
+              "type": "object",
+              "description": "Asset that was not downloaded.",
+              "properties": {
+                "name": {
+                  "examples": [
+                    "Takex SSC-T800 Series Sequential Array Scanning Light Curtain"
+                  ],
+                  "description": "How was the asset labeled by the vendor? In the case of downloadable documents this is usually the link text. For images or other assets without a text label, you can use the alt text if available, or leave this blank",
+                  "anyOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "source": {
+                  "examples": [
+                    "https://www.wolfautomation.com/media/pdf/lightcurtain/takex/takex-ssc-t800-lightcurtain.jpg"
+                  ],
+                  "description": "Fully qualified URL used to download the asset, or the string \"data-url\" to indicate an asset was provided in the form of a \"data:...\" URL.",
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "format": "url"
+                    },
+                    {
+                      "enum": [
+                        "data-url"
+                      ]
+                    }
+                  ]
+                },
+                "filename": {
+                  "examples": [
+                    "download.pdf"
+                  ],
+                  "description": "If the server response sets a download filename different than the url, e.g. via the header `Content-Disposition: attachment; filename=\"downloaded.pdf\"`, set this field to that name, otherwise do not set this field. Generally, this filed will be unset for images.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "type": {
+                  "examples": [
+                    "image/product"
+                  ],
+                  "description": "How is the asset presented in the page? As a rendered image, as a cad download (common filetypes for cad/3D are .step, .iges, .SLDPRT, .ipt, .x_t) (common filetypes for cad/2D are .dxf, .dwg, .SLDDRW), as a pdf or word document, or as another downloadable file type.  When choosing between a more generic type (e.g. \"image\") and a more specific type (e.g. \"image/product\"), use the more specific type if and only if the vendor clearly makes the distinction between the more specific types, or if the file type is unambiguous (e.g. .step files are always \"cad/3D\"). If you're not sure, use the more generic type.",
+                  "enum": [
+                    "image",
+                    "image/product",
+                    "image/package",
+                    "cad",
+                    "cad/2D",
+                    "cad/3D",
+                    "document",
+                    "document/spec",
+                    "document/cert",
+                    "document/manual",
+                    "document/catalog",
+                    "other"
+                  ]
+                },
+                "non_download_reason": {
+                  "description": "Why was the asset not downloaded? \"login-required\": the file can only be downloaded after login, \"dead-link\": the file is generally unavailable (e.g. because it leads to a 404/page not found), \"download-pending\": file was not downloaded yet",
+                  "enum": [
+                    "login-required",
+                    "dead-link",
+                    "download-pending"
+                  ]
+                }
+              },
+              "required": [
+                "source",
+                "type"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "assets": {
+      "examples": [
+        [
+          {
+            "source": "https://cdn.imgeng.in/media/catalog/product/cache/e53929650d581985fa53cd0b86942f5e/f/r/frenic-frenicmini-c2_fig1_7.jpg",
+            "type": "image/product",
+            "sha256": "3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d",
+            "media_type": "image/jpeg"
+          },
+          {
+            "name": "Takex SSC-T800 Series Sequential Array Scanning Light Curtain Datasheet",
+            "source": "https://www.wolfautomation.com/media/pdf/lightcurtain/takex/takex-ssc-t800-lightcurtain-datasheet.pdf",
+            "type": "document/spec",
+            "sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+            "media_type": "application/pdf"
+          },
+          {
+            "name": "Takex Light Curtain Sensors Catalog",
+            "source": "https://www.wolfautomation.com/media/pdf/lightcurtain/takex/takex-lightcurtain-catalog.pdf",
+            "type": "document/catalog"
+          }
+        ]
+      ],
+      "description": "Images, datasheets, CAD models related to the product or product category",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "anyOf": [
+          {
+            "type": "object",
+            "description": "Downloaded asset.",
+            "properties": {
+              "name": {
+                "examples": [
+                  "Takex SSC-T800 Series Sequential Array Scanning Light Curtain"
+                ],
+                "description": "How was the asset labeled by the vendor? In the case of downloadable documents this is usually the link text. For images or other assets without a text label, you can use the alt text if available, or leave this blank",
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "source": {
+                "examples": [
+                  "https://www.wolfautomation.com/media/pdf/lightcurtain/takex/takex-ssc-t800-lightcurtain.jpg"
+                ],
+                "description": "Fully qualified URL used to download the asset, or the string \"data-url\" to indicate an asset was provided in the form of a \"data:...\" URL.",
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "url"
+                  },
+                  {
+                    "enum": [
+                      "data-url"
+                    ]
+                  }
+                ]
+              },
+              "filename": {
+                "examples": [
+                  "download.pdf"
+                ],
+                "description": "If the server response sets a download filename different than the url, e.g. via the header `Content-Disposition: attachment; filename=\"downloaded.pdf\"`, set this field to that name, otherwise do not set this field. Generally, this filed will be unset for images.",
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "examples": [
+                  "image/product"
+                ],
+                "description": "How is the asset presented in the page? As a rendered image, as a cad download (common filetypes for cad/3D are .step, .iges, .SLDPRT, .ipt, .x_t) (common filetypes for cad/2D are .dxf, .dwg, .SLDDRW), as a pdf or word document, or as another downloadable file type.  When choosing between a more generic type (e.g. \"image\") and a more specific type (e.g. \"image/product\"), use the more specific type if and only if the vendor clearly makes the distinction between the more specific types, or if the file type is unambiguous (e.g. .step files are always \"cad/3D\"). If you're not sure, use the more generic type.",
+                "enum": [
+                  "image",
+                  "image/product",
+                  "image/package",
+                  "cad",
+                  "cad/2D",
+                  "cad/3D",
+                  "document",
+                  "document/spec",
+                  "document/cert",
+                  "document/manual",
+                  "document/catalog",
+                  "other"
+                ]
+              },
+              "sha256": {
+                "examples": [
+                  "ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73"
+                ],
+                "description": "Hash of asset contents as 64 character hexadecimal string. Use the SHA-256 flavor of the SHA-2 algorithm. This field may be omitted only if the file is behind a login wall.",
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "media_type": {
+                "examples": [
+                  "image/jpeg",
+                  "application/pdf",
+                  "application/sldprt"
+                ],
+                "description": "The media type (formerly MIME type) describes the file format and is similar to the file extension. The media type can be extracted from the \"content-type\" response header when downloading the file. This header is typically more reliable than the file extension. If you're not sure, use the generic content type \"application/octet-stream\" for binary formats. This field may be omitted only if the file is behind a login wall.",
+                "type": "string",
+                "pattern": "^[a-z]+\\/[a-z0-9.+:_-]+$"
+              }
+            },
+            "required": [
+              "source",
+              "type",
+              "sha256",
+              "media_type"
+            ]
+          },
+          {
+            "type": "object",
+            "description": "Asset that was not downloaded.",
+            "properties": {
+              "name": {
+                "examples": [
+                  "Takex SSC-T800 Series Sequential Array Scanning Light Curtain"
+                ],
+                "description": "How was the asset labeled by the vendor? In the case of downloadable documents this is usually the link text. For images or other assets without a text label, you can use the alt text if available, or leave this blank",
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "source": {
+                "examples": [
+                  "https://www.wolfautomation.com/media/pdf/lightcurtain/takex/takex-ssc-t800-lightcurtain.jpg"
+                ],
+                "description": "Fully qualified URL used to download the asset, or the string \"data-url\" to indicate an asset was provided in the form of a \"data:...\" URL.",
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "url"
+                  },
+                  {
+                    "enum": [
+                      "data-url"
+                    ]
+                  }
+                ]
+              },
+              "filename": {
+                "examples": [
+                  "download.pdf"
+                ],
+                "description": "If the server response sets a download filename different than the url, e.g. via the header `Content-Disposition: attachment; filename=\"downloaded.pdf\"`, set this field to that name, otherwise do not set this field. Generally, this filed will be unset for images.",
+                "type": "string",
+                "minLength": 1
+              },
+              "type": {
+                "examples": [
+                  "image/product"
+                ],
+                "description": "How is the asset presented in the page? As a rendered image, as a cad download (common filetypes for cad/3D are .step, .iges, .SLDPRT, .ipt, .x_t) (common filetypes for cad/2D are .dxf, .dwg, .SLDDRW), as a pdf or word document, or as another downloadable file type.  When choosing between a more generic type (e.g. \"image\") and a more specific type (e.g. \"image/product\"), use the more specific type if and only if the vendor clearly makes the distinction between the more specific types, or if the file type is unambiguous (e.g. .step files are always \"cad/3D\"). If you're not sure, use the more generic type.",
+                "enum": [
+                  "image",
+                  "image/product",
+                  "image/package",
+                  "cad",
+                  "cad/2D",
+                  "cad/3D",
+                  "document",
+                  "document/spec",
+                  "document/cert",
+                  "document/manual",
+                  "document/catalog",
+                  "other"
+                ]
+              },
+              "non_download_reason": {
+                "description": "Why was the asset not downloaded? \"login-required\": the file can only be downloaded after login, \"dead-link\": the file is generally unavailable (e.g. because it leads to a 404/page not found), \"download-pending\": file was not downloaded yet",
+                "enum": [
+                  "login-required",
+                  "dead-link",
+                  "download-pending"
+                ]
+              }
+            },
+            "required": [
+              "source",
+              "type"
+            ]
+          }
+        ]
+      }
+    },
+    "_scrape_metadata": {
+      "description": "Metadata related to original scrape",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "breadcrumbs": {
+          "examples": [
+            [
+              {
+                "name": "Home",
+                "url": "https://www.example-vendor.com"
+              },
+              {
+                "name": "Fasteners",
+                "url": "https://www.example-vendor.com/fasteners"
+              },
+              {
+                "name": "Screws",
+                "url": "https://www.example-vendor.com/fasteners/screws"
+              }
+            ]
+          ],
+          "description": "Path taken from root of vendor site to this product, including Home",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "url": {
+                "type": "string",
+                "format": "url"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          }
+        },
+        "url": {
+          "examples": [
+            "https://www.example-vendor.com/products/abc123?utm_campaign=foo&units=in"
+          ],
+          "description": "The exact url from which this product data was extracted, untransformed or normalized",
+          "type": "string",
+          "format": "url"
+        },
+        "date_visited": {
+          "examples": [
+            "2022-11-15T22:59:42.345Z"
+          ],
+          "description": "The timestamp at which the page was visited",
+          "type": "string",
+          "pattern": "^\\d\\d\\d\\d-[0-1]\\d-[0-3]\\d[ tT](?:[0-2]\\d:[0-5]\\d:[0-5]\\d|23:59:60)(?:\\.\\d+)?"
+        },
+        "source_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "vendor_name",
+    "sku",
+    "name"
+  ]
+}
